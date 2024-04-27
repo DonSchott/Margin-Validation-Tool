@@ -1,4 +1,10 @@
 import sqlite3
+import logging
+
+
+# Setup logging
+logging.basicConfig(filename='margin_validation.log', level=logging.ERROR, format='%(asctime)s - %(levelname)s - %('
+                                                                                  'message)s')
 
 
 def fetch_margins(conn, table_name, report_date, report_time=None):
@@ -62,6 +68,7 @@ def main():
 
     # we suppose the checks are run at 10am on
     today = '2020-05-12'
+    # therefore...
     yesterday = '2020-05-11'
 
     # CHECK 1
@@ -71,23 +78,35 @@ def main():
                                       report_time=get_min_time_of_day(conn, 'CI050', today))
 
     # Validate that yesterdays eod cc margins are found in today's first ci margin. And vice versa
-    discrepancies = validate_elements_of_list1_in_list2(cc050_yesterday, ci050_today_first)
-    discrepancies += validate_elements_of_list1_in_list2(ci050_today_first, cc050_yesterday)
+    missing_cc050 = validate_elements_of_list1_in_list2(cc050_yesterday, ci050_today_first)
+    missing_ci050 = validate_elements_of_list1_in_list2(ci050_today_first, cc050_yesterday)
 
     # CHECK 2
     # Check if the end-of-day values are the same as the last intraday values.
     ci050_yesterday_last = fetch_margins(conn, 'CI050', yesterday,
                                          report_time=get_max_time_of_day(conn, 'CI050', yesterday))
 
-    discrepancies += validate_elements_of_list1_in_list2(cc050_yesterday, ci050_yesterday_last)
-    discrepancies += validate_elements_of_list1_in_list2(ci050_yesterday_last, cc050_yesterday)
+    missing_cc050 += validate_elements_of_list1_in_list2(cc050_yesterday, ci050_yesterday_last)
+    missing_ci050 += validate_elements_of_list1_in_list2(ci050_yesterday_last, cc050_yesterday)
 
-    if discrepancies:
-        print("Error: Margins validation failed. Please have a look! Discrepancies found:")
-        for error in discrepancies:
-            print(error)
-    else:
-        print("Margins validation successful. No discrepancies found.")
+    # Remove duplicates
+    missing_cc050 = list(set(missing_cc050))
+    missing_ci050 = list(set(missing_ci050))
+
+    if not missing_cc050 and not missing_ci050:
+        print("Margins validation successful. No discrepancies found.\n")
+    if missing_cc050:
+        error_message = "\nValidation failed! Missing margins in CC050:\n"
+        for error in missing_cc050:
+            error_message += error + '\n'
+        print(error_message)
+        logging.error(error_message)
+    if missing_ci050:
+        error_message = "\nValidation failed! Missing margins in CI050:\n"
+        for error in missing_ci050:
+            error_message += error + '\n'
+        print(error_message)
+        logging.error(error_message)
 
     conn.close()
 
