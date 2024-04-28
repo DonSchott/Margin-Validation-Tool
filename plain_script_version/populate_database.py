@@ -90,4 +90,4 @@ ci050_data = [
     ('2020-05-12', '09:00:00', 'Bank 2', 'A1', 'IMSM', 8366.4),
 ]
 
-populate_database("LZDB_dummy.db", cc050_data, ci050_data)
+populate_database("../LZDB_dummy.db", cc050_data, ci050_data)
