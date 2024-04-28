@@ -1,10 +1,14 @@
 import sqlite3
 import logging
+import smtplib
 
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
+import credentials
 
 # Setup logging
-logging.basicConfig(filename='margin_validation.log', level=logging.ERROR, format='%(asctime)s - %(levelname)s - %('
-                                                                                  'message)s')
+logging.basicConfig(filename='margin_validation.log', level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 def fetch_margins(conn, table_name, report_date, report_time=None):
@@ -63,6 +67,29 @@ def validate_elements_of_list1_in_list2(list1, list2):
     return discrepancies
 
 
+def send_email(subject, body):
+    """Sends an alert email when validation failed."""
+    sender_email = credentials.sender_email
+    sender_email_pw = credentials.sender_email_pw
+    receiver_email = credentials.receiver_email
+
+    message = MIMEMultipart()
+    message["From"] = sender_email
+    message["To"] = ", ".join(receiver_email)
+    message["Subject"] = subject
+
+    # Structure email, add body to email
+    message.attach(MIMEText(body, "plain"))
+
+    # Convert the message to a string and send it
+    with smtplib.SMTP("smtp.gmail.com", 587) as server:
+        server.starttls()
+
+        server.login(sender_email, sender_email_pw)
+        text = message.as_string()
+        server.sendmail(sender_email, receiver_email, text)
+
+
 def main():
     conn = sqlite3.connect('LZDB_dummy.db')
 
@@ -101,12 +128,14 @@ def main():
             error_message += error + '\n'
         print(error_message)
         logging.error(error_message)
+        send_email("Validation Alert: Missing Margins in CC050", error_message)
     if missing_ci050:
         error_message = "\nValidation failed! Missing margins in CI050:\n"
         for error in missing_ci050:
             error_message += error + '\n'
         print(error_message)
         logging.error(error_message)
+        send_email("Validation Alert: Missing Margins in CI050", error_message)
 
     conn.close()
 
