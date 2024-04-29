@@ -9,7 +9,7 @@ import credentials
 
 # Setup logging
 logging.basicConfig(filename='../margin_validation.log', level=logging.ERROR, format='%(asctime)s - %(levelname)s - %('
-                                                                                  'message)s')
+                                                                                     'message)s')
 
 
 def fetch_margins(conn, table_name, report_date, report_time=None):
