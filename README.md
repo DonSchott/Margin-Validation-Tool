@@ -18,7 +18,7 @@ If any discrepancies are found, the script logs them and sends alert emails to s
 ## Usage
 
 1. Ensure Python 3.x is installed on your system.
-2. Install required dependencies listed in `requirements.txt` using pip:
+2. Install required dependencies listed in `requirements.txt`. When using pip:
     ```bash
     pip install -r requirements.txt
     ```
@@ -38,7 +38,7 @@ with example data provided.
 ## Folder Structure
 
 - `plain_script_version/`: Contains the main Python script `validate_margin_transfer.py` and the helper script `populate_database.py`.
-- `jupyter_notebook/`: Contains the JuPyTer notebook version of the script. Useful to understanding.
+- `jupyter_notebook/`: Contains the JuPyTer notebook version of the script. With long comments regarding the code it is useful for understanding.
 - `credentials.py`: File to store email credentials (not included in the public repository).
 - `README.md`: This file providing an overview of the project.
 
