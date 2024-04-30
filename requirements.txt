@@ -1,4 +1,4 @@
-sqlite3
-logging
-smtplib
-pytest~=8.2.0
+# all three libraries are part of python standard library. no installment needed
+#sqlite3
+#logging
+#smtplib
